@@ -21,6 +21,15 @@ For Windows authentication, a typical local value is:
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=YOUR_DATABASE;Trusted_Connection=True;TrustServerCertificate=True" --project MockLTO_API/MockLTO_API.csproj
 ```
 
+For the `MockLto` database on SQL Server LocalDB:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MockLto;Integrated Security=True;TrustServerCertificate=True" --project MockLTO_API/MockLTO_API.csproj
+```
+
+The database name (`Database` or `Initial Catalog`) is required. Otherwise SQL Server
+uses the login's default database, which may not contain `dbo.vw_LtoVehicleRecord`.
+
 List the configured secret keys:
 
 ```powershell
@@ -43,13 +52,69 @@ The default stored-procedure command timeout is configured through `Database:Com
 
 ## LTO vehicle view endpoints
 
-The API reads `dbo.vw_LtoVehicleRecord` through parameterized ADO.NET queries. Available routes are:
+The API reads `dbo.vw_LtoVehicleRecord` through parameterized ADO.NET queries. Start
+the API and use Swagger at `https://localhost:7175/swagger`, or call the routes directly.
+
+### List and filter records
+
+```http
+GET /api/lto-vehicle-records?page=1&pageSize=50
+```
+
+Optional query parameters:
+
+| Parameter | Description | Example |
+| --- | --- | --- |
+| `page` | Page number, starting at 1 | `1` |
+| `pageSize` | Records per page, from 1 to 200 | `50` |
+| `registrationStatus` | Exact registration status code | `REGISTERED` |
+| `hasLtoAlarm` | Filter by active LTO alarm | `true` or `false` |
+
+Filters can be combined:
+
+```powershell
+Invoke-RestMethod "https://localhost:7175/api/lto-vehicle-records?page=1&pageSize=20&registrationStatus=REGISTERED&hasLtoAlarm=false"
+```
+
+The list response includes the records and paging information:
+
+```json
+{
+  "items": [],
+  "page": 1,
+  "pageSize": 20,
+  "totalCount": 0
+}
+```
+
+### Find one record
+
+Use the vehicle registration ID:
+
+```powershell
+Invoke-RestMethod "https://localhost:7175/api/lto-vehicle-records/1"
+```
+
+Use a plate number. URL-encode spaces as `%20`; spaces, hyphens, and letter casing are
+ignored during matching:
+
+```powershell
+Invoke-RestMethod "https://localhost:7175/api/lto-vehicle-records/by-plate/ABC%201234"
+```
+
+Use an MV file number:
+
+```powershell
+Invoke-RestMethod "https://localhost:7175/api/lto-vehicle-records/by-mv-file/1301-00000123456"
+```
+
+Single-record endpoints return `200 OK` with the matching record or `404 Not Found`
+when there is no match. Invalid pagination values return `400 Bad Request`.
+
+### Route summary
 
 - `GET /api/lto-vehicle-records?page=1&pageSize=50`
 - `GET /api/lto-vehicle-records?registrationStatus=REGISTERED&hasLtoAlarm=false`
 - `GET /api/lto-vehicle-records/{vehicleRegistrationId}`
 - `GET /api/lto-vehicle-records/by-plate/{plateNumber}`
 - `GET /api/lto-vehicle-records/by-mv-file/{mvFileNumber}`
-
-The list endpoint accepts page sizes from 1 through 200. Plate lookups ignore spaces,
-hyphens, and letter casing. Lookup endpoints return `404 Not Found` when no view row matches.
