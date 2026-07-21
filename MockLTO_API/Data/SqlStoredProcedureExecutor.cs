@@ -1,6 +1,7 @@
 using System.Data;
 using System.Globalization;
 using Microsoft.Data.SqlClient;
+using MockLTO_API.Configuration;
 
 namespace MockLTO_API.Data;
 
@@ -9,21 +10,10 @@ public sealed class SqlStoredProcedureExecutor : ISqlStoredProcedureExecutor
     private readonly string _connectionString;
     private readonly int _commandTimeoutSeconds;
 
-    public SqlStoredProcedureExecutor(IConfiguration configuration)
+    public SqlStoredProcedureExecutor(IApplicationConfig configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
-
-        if (string.IsNullOrWhiteSpace(_connectionString))
-        {
-            throw new InvalidOperationException("Connection string 'DefaultConnection' cannot be empty.");
-        }
-
-        _commandTimeoutSeconds = configuration.GetValue("Database:CommandTimeoutSeconds", 30);
-        if (_commandTimeoutSeconds <= 0)
-        {
-            throw new InvalidOperationException("Database:CommandTimeoutSeconds must be greater than zero.");
-        }
+        _connectionString = configuration.SqlConnectionString;
+        _commandTimeoutSeconds = configuration.SqlCommandTimeoutSeconds;
     }
 
     public async Task<int> ExecuteAsync(string storedProcedure, IEnumerable<SqlParameter>? parameters = null, CancellationToken cancellationToken = default)
