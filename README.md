@@ -40,3 +40,16 @@ dotnet run --project MockLTO_API/MockLTO_API.csproj
 In Development, Swagger UI is available at `https://localhost:7175/swagger` using the HTTPS launch profile.
 
 The default stored-procedure command timeout is configured through `Database:CommandTimeoutSeconds` in `appsettings.json`.
+
+## LTO vehicle view endpoints
+
+The API reads `dbo.vw_LtoVehicleRecord` through parameterized ADO.NET queries. Available routes are:
+
+- `GET /api/lto-vehicle-records?page=1&pageSize=50`
+- `GET /api/lto-vehicle-records?registrationStatus=REGISTERED&hasLtoAlarm=false`
+- `GET /api/lto-vehicle-records/{vehicleRegistrationId}`
+- `GET /api/lto-vehicle-records/by-plate/{plateNumber}`
+- `GET /api/lto-vehicle-records/by-mv-file/{mvFileNumber}`
+
+The list endpoint accepts page sizes from 1 through 200. Plate lookups ignore spaces,
+hyphens, and letter casing. Lookup endpoints return `404 Not Found` when no view row matches.

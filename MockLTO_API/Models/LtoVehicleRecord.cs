@@ -1,0 +1,25 @@
+namespace MockLTO_API.Models;
+
+public sealed record LtoVehicleRecord(
+    long VehicleRegistrationId,
+    long VehicleId,
+    string PlateNumber,
+    string MvFileNumber,
+    string EngineNumber,
+    string ChassisNumber,
+    string Make,
+    string SeriesModel,
+    string BodyType,
+    string? Color,
+    short ModelYear,
+    string Classification,
+    string RegistrationStatus,
+    DateOnly? RegistrationDate,
+    DateOnly? RegistrationExpiryDate,
+    bool HasLtoAlarm,
+    long RegisteredOwnerId,
+    string RegisteredOwnerFullName,
+    string? RegisteredOwnerNationalId,
+    string? MobileNumber,
+    string? EmailAddress,
+    string RegisteredAddress);
