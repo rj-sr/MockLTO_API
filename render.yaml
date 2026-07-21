@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mocklto-api
+    runtime: docker
+    dockerfilePath: ./MockLTO_API/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: 10000
+      - key: ConnectionStrings__DefaultConnection
+        sync: false

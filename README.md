@@ -40,6 +40,29 @@ Do not paste real credentials into tracked configuration files, source code, com
 
 For deployed environments, provide the same setting through the environment variable `ConnectionStrings__DefaultConnection` or another ASP.NET Core configuration provider.
 
+## Deploy to Render with Docker
+
+The repository includes a Render Blueprint (`render.yaml`) and a production Dockerfile.
+The container listens on port `10000`, exposes Swagger at `/swagger`, and provides a
+database-independent health check at `/health`.
+
+1. Push this repository to GitHub, GitLab, or Bitbucket.
+2. In Render, select **New > Blueprint** and connect the repository.
+3. When prompted for `ConnectionStrings__DefaultConnection`, enter the complete Azure
+   SQL connection string, including the password. For this database, use:
+
+```text
+Data Source=tcp:rjsr.database.windows.net,1433;Initial Catalog=MockLtoDB;Persist Security Info=False;User ID=rj;Password=YOUR_PASSWORD;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=30;Encrypt=True;TrustServerCertificate=False;Command Timeout=0
+```
+
+Do not add the real password to `render.yaml`, the Dockerfile, or any tracked file.
+After deployment, open `https://YOUR-SERVICE.onrender.com/swagger`.
+
+If API calls cannot reach Azure SQL, allow the Render service's outbound IP ranges in
+the Azure SQL server firewall. Find the service-specific ranges in Render under
+**Connect > Outbound**. The `/health` route deliberately does not query the database,
+so deployment health remains separate from database availability.
+
 ## Run
 
 ```powershell
